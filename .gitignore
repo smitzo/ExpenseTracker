@@ -1,0 +1,27 @@
+# Dependencies and generated output
+node_modules/
+dist/
+build/
+coverage/
+playwright-report/
+test-results/
+*.log
+*.tsbuildinfo
+.DS_Store
+# Local secrets; templates are shared
+.env
+.env.*
+!.env.example
+# Local planning and assistant instructions
+openspec/
+**/AGENTS.md
+**/CLAUDE.md
+**/GEMINI.md
+.agents/
+.codex/
+.aws/
+.vercel/
+.git-local/
+.local/
+# Legacy generated data
+server/categories.csv
