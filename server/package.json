@@ -1,30 +1,19 @@
 {
-  "name": "server",
+  "name": "@penny/server",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "private": true,
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon server.js"
+    "dev": "node --env-file-if-exists=../.env --watch src/start.js",
+    "start": "node --env-file-if-exists=../.env src/start.js",
+    "indexes": "node --env-file-if-exists=../.env src/db/setup.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
-    "bcrypt": "^5.1.0",
-    "body-parser": "^1.20.2",
-    "cors": "^2.8.5",
-    "csv-writer": "^1.6.0",
-    "dotenv": "^16.0.3",
-    "express": "^4.18.2",
-    "json2csv": "^6.0.0-alpha.2",
-    "jsonwebtoken": "^9.0.0",
-    "mongoose": "^6.6.1",
-    "nodemailer": "^6.9.14",
-    "nodemon": "^2.0.22",
-    "passport": "^0.6.0",
-    "passport-jwt": "^4.0.1",
-    "winston": "^3.13.1"
+    "express": "^5.3.0",
+    "mongoose": "^9.11.4",
+    "zod": "^4.6.7",
+    "helmet": "^8.3.0",
+    "cookie": "^1.1.1",
+    "bcryptjs": "^3.0.3"
   }
 }
