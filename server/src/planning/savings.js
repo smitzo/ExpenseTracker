@@ -1,0 +1,2 @@
+export function savingsRate(income, expenses) { return income > 0 ? Math.round((income - expenses) / income * 100) : null; }
+export function savingsTarget(summary, target) { const saved = summary.income - summary.expenses; return { saved, target, remaining: Math.max(0, target - saved), percent: target > 0 ? Math.max(0, Math.round(saved / target * 100)) : null, rate: savingsRate(summary.income, summary.expenses) }; }
