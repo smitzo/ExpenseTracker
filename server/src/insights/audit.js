@@ -1,0 +1,4 @@
+import { collection } from '../db/connection.js';
+import { newId } from '../domain/identifiers.js';
+export function auditMutations(req, res, next) { res.on('finish', () => { if (req.user && !['GET', 'HEAD', 'OPTIONS'].includes(req.method) && res.statusCode < 400) { collection(req.db, 'audit').insertOne({ _id: newId(), ownerId: req.user._id, action: req.method + ' ' + req.path.replace(/[a-f0-9-]{36}/g, ':id'), requestId: req.requestId, createdAt: new Date(), expiresAt: new Date(Date.now() + 90 * 86400000) }).catch(() => console.error(JSON.stringify({ code: 'AUDIT_WRITE_FAILED', requestId: req.requestId }))); } }); next(); }
+export async function listAudit(req, res) { const rows = await collection(req.db, 'audit').find({ ownerId: req.user._id }, { projection: { ownerId: 0 } }).sort({ createdAt: -1 }).limit(50).toArray(); res.json({ data: rows }); }
