@@ -11,7 +11,7 @@
     "node": ">=24 <25"
   },
   "scripts": {
-    "dev": "concurrently -k \"npm run dev -w server\" \"npm run dev -w client\"",
+    "dev": "node --env-file-if-exists=.env scripts/dev.js",
     "build": "npm run build -w client",
     "start": "npm start -w server",
     "test": "node --test --test-concurrency=1 tests/*.test.js",

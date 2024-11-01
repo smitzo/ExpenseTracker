@@ -1,0 +1,6 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import { integration, enabled, account, write, config } from './helpers.js';
+const ctx=integration();
+test('accounts use private cookies, sanitized users and CSRF protection',{skip:!enabled},async()=>{const u=await account(ctx);assert.ok(!('passwordHash' in u.user));const profile=await u.agent.get('/api/auth/session').expect(200);assert.equal(profile.body.csrf,u.csrf);const cookies=profile.headers['cache-control'];assert.equal(cookies,'no-store');await u.agent.post('/api/auth/logout').set('Origin',config.APP_ORIGIN).send({}).expect(403);await write(u,'post','/auth/logout').expect(204);await u.agent.get('/api/auth/session').expect(401);});
+test('origin and bad credentials are rejected',{skip:!enabled},async()=>{const u=await account(ctx);await u.agent.post('/api/auth/login').set('Origin','https://evil.example').send({}).expect(403);await u.agent.post('/api/auth/login').set('Origin',config.APP_ORIGIN).send({email:u.user.email,password:'incorrect password value'}).expect(401);});
+test('password change revokes every existing session',{skip:!enabled},async()=>{const u=await account(ctx);await write(u,'put','/password',{currentPassword:'correct horse battery staple',password:'new long unrelated word sequence'}).expect(204);await u.agent.get('/api/auth/session').expect(401);});
