@@ -1,0 +1,6 @@
+# Data controls
+GET /api/account/export returns the signed-in account’s profile and owned ledger (including archived rows), categories, budgets and recurring plans as a JSON download. It excludes password hashes, bearer sessions, rate-limit keys and infrastructure secrets. The current export cap is 100,001 rows per collection; do not promise completeness beyond that without a streaming export design.
+
+DELETE /api/account requires password reauthentication, JSON Origin and CSRF headers. It revokes sessions and removes owned records before deleting the account. If infrastructure fails mid-delete, the account may remain and the user can sign in and retry; operators must reconcile partial deletions. This is not a cross-collection transaction. Backups remain subject to the published retention policy and access controls. Define and publish that policy before collecting real customer data.
+
+Audit records expire after 90 days and contain route action, request ID and timestamps. Logs omit private values. No bank credentials or financial-provider tokens are collected. Demo records are client-only samples. The operator must define support/deletion contact and retention periods for production; this implementation does not establish a legal compliance claim.

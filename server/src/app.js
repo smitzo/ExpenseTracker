@@ -1,3 +1,4 @@
+import { exportAccount, deleteAccount } from './accounts/privacy.js';
 import express from 'express';
 import { securityHeaders, privateCache } from './security/headers.js';
 import { requestLog } from './security/requestLog.js';
@@ -39,6 +40,7 @@ export function createApp({ config, getDb }) {
   app.get('/api/ready', readiness);
   app.post('/api/auth/register', register(config)); app.post('/api/auth/login', login(config));
   const router = express.Router(); router.use(authenticate(config), csrf, guardWrites(config), auditMutations);
+  router.get('/account/export', exportAccount); router.delete('/account', deleteAccount(config));
   router.get('/auth/session', getProfile); router.post('/auth/logout', logout(config));
   router.patch('/profile', updateProfile); router.put('/preferences', updatePreferences); router.put('/password', changePassword(config));
   router.get('/sessions', listSessions); router.delete('/sessions/:id', revokeSession);
