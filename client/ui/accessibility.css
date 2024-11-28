@@ -5,3 +5,5 @@
 /* Secondary text remains legible on every paper and tinted surface. */
 :root{--muted:#61705f}.breadcrumb,.section-kicker,.stat-label,.stat-foot,.chart-subtitle,.chart-labels,.chart-key,.footer,.upcoming-row small,.merchant small{color:#5e6f5a}.demo-tag{color:#756039}.insight-feature .eyebrow{color:#6b683a}.insight-feature p{color:#61694e}.nav-label{color:#a1b9a5}.workspace-name small{color:#a9bfae}.profile-button small{color:#a5bda9}.sidebar-tip span{color:#a9bda6}.positive{color:#386b49}.negative{color:#9b443e}.auth-story .muted{color:#bdcec1}
 .card,.main-shell,.grid-2>*,.grid-3>*,.overview-bottom>*,.summary-grid>*{min-width:0}.table-wrap{max-width:100%}
+
+.table-wrap{position:relative}
