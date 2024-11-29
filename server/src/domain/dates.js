@@ -5,9 +5,9 @@ export const today = () => new Date().toISOString().slice(0, 10);
 export const monthOf = day => day.slice(0, 7);
 export function monthDays(month) { return new Date(Date.UTC(Number(month.slice(0, 4)), Number(month.slice(5)), 0)).getUTCDate(); }
 export function shiftMonth(month, delta) { const d = new Date(month + '-01T00:00:00Z'); d.setUTCMonth(d.getUTCMonth() + delta); return d.toISOString().slice(0, 7); }
-export function nextDue(day, frequency) {
+export function nextDue(day, frequency, anchorDay = Number(day.slice(8))) {
   const d = new Date(day + 'T00:00:00Z');
   if (frequency === 'weekly') d.setUTCDate(d.getUTCDate() + 7);
-  else { const original = d.getUTCDate(); d.setUTCDate(1); d.setUTCMonth(d.getUTCMonth() + (frequency === 'yearly' ? 12 : 1)); d.setUTCDate(Math.min(original, monthDays(d.toISOString().slice(0, 7)))); }
+  else { const original = anchorDay; d.setUTCDate(1); d.setUTCMonth(d.getUTCMonth() + (frequency === 'yearly' ? 12 : 1)); d.setUTCDate(Math.min(original, monthDays(d.toISOString().slice(0, 7)))); }
   return d.toISOString().slice(0, 10);
 }
