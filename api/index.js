@@ -2,7 +2,7 @@ import { createApp } from '../server/src/app.js';
 import { loadConfig } from '../server/src/config.js';
 import { database } from '../server/src/db/connection.js';
 let app;
-export default async function handler(req, res) {
+export default function handler(req, res) {
   try {
     if (!app) {
       const config = loadConfig();
