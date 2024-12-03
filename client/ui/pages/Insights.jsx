@@ -1,4 +1,77 @@
 import { Sparkles, TrendingUp, Target } from 'lucide-react';
 import { useSession } from '../lib/Session.jsx';
 import { money } from '../lib/format.js';
-export function Insights({data}) {const {user}=useSession();const d=data.digest;return <><div className="page-heading"><div><h1>A little perspective changes things.</h1><p>Thoughtful observations from the entries you’ve recorded.</p></div><Sparkles size={25} color="#9ba682"/></div><div className="grid-2"><section className="card"><div className="card-heading"><h2>Patterns worth a look</h2><Sparkles size={17}/></div>{d.insights.map((i,n)=><div className="insight" key={n}><span className="insight-icon"><TrendingUp size={17}/></span><div><h3>{i.title}</h3><p>{i.detail}</p>{i.amount!==undefined&&<strong>{money(i.amount,user.preferences.currency)}</strong>}</div></div>)}{!d.insights.length&&<div className="empty"><Sparkles size={26}/><h3>Your story is still taking shape</h3><p>Keep recording entries. Patterns appear with a little history.</p></div>}<p className="help-note">These are explainable observations, not financial advice. They use your recorded data and may miss payments you haven’t entered.</p></section><div><section className="card insight-feature"><div className="card-heading"><h2>Where this month could land</h2><TrendingUp size={18}/></div><h3>{d.forecast.projected===null?'A little more history needed':money(d.forecast.projected,user.preferences.currency)}</h3><p>{d.forecast.explanation}</p></section><section className="card section-gap"><div className="card-heading"><h2>Your savings intention</h2><Target size={17}/></div><p className="chart-total">{money(d.savings.saved,user.preferences.currency)}</p><p className="help-note">{d.savings.target?`Toward ${money(d.savings.target,user.preferences.currency)} this month. Set your intention in Settings.`:'Set a monthly savings intention in Settings.'}</p></section></div></div></>; }
+export function Insights({ data }) {
+  const { user } = useSession();
+  const d = data.digest;
+  return (
+    <>
+      <div className="page-heading">
+        <div>
+          <h1>A little perspective changes things.</h1>
+          <p>Thoughtful observations from the entries you’ve recorded.</p>
+        </div>
+        <Sparkles size={25} color="#9ba682" />
+      </div>
+      <div className="grid-2">
+        <section className="card">
+          <div className="card-heading">
+            <h2>Patterns worth a look</h2>
+            <Sparkles size={17} />
+          </div>
+          {d.insights.map((i, n) => (
+            <div className="insight" key={n}>
+              <span className="insight-icon">
+                <TrendingUp size={17} />
+              </span>
+              <div>
+                <h3>{i.title}</h3>
+                <p>{i.detail}</p>
+                {i.amount !== undefined && (
+                  <strong>{money(i.amount, user.preferences.currency)}</strong>
+                )}
+              </div>
+            </div>
+          ))}
+          {!d.insights.length && (
+            <div className="empty">
+              <Sparkles size={26} />
+              <h3>Your story is still taking shape</h3>
+              <p>Keep recording entries. Patterns appear with a little history.</p>
+            </div>
+          )}
+          <p className="help-note">
+            These are explainable observations, not financial advice. They use your recorded data
+            and may miss payments you haven’t entered.
+          </p>
+        </section>
+        <div>
+          <section className="card insight-feature">
+            <div className="card-heading">
+              <h2>Where this month could land</h2>
+              <TrendingUp size={18} />
+            </div>
+            <h3>
+              {d.forecast.projected === null
+                ? 'A little more history needed'
+                : money(d.forecast.projected, user.preferences.currency)}
+            </h3>
+            <p>{d.forecast.explanation}</p>
+          </section>
+          <section className="card section-gap">
+            <div className="card-heading">
+              <h2>Your savings intention</h2>
+              <Target size={17} />
+            </div>
+            <p className="chart-total">{money(d.savings.saved, user.preferences.currency)}</p>
+            <p className="help-note">
+              {d.savings.target
+                ? `Toward ${money(d.savings.target, user.preferences.currency)} this month. Set your intention in Settings.`
+                : 'Set a monthly savings intention in Settings.'}
+            </p>
+          </section>
+        </div>
+      </div>
+    </>
+  );
+}

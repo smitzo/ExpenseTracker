@@ -17,7 +17,9 @@
     "test": "node --test --test-concurrency=1 tests/*.test.js",
     "lint": "eslint server/src client/ui api tests scripts",
     "test:browser": "playwright test",
-    "check": "npm run lint && npm test && npm run build"
+    "check": "npm run format:check && npm run lint && npm test && npm run build",
+    "format": "prettier --write server/src client/ui api tests scripts *.js *.json client/vite.config.js",
+    "format:check": "prettier --check server/src client/ui api tests scripts *.js *.json client/vite.config.js"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
@@ -27,6 +29,7 @@
     "eslint": "^10.13.0",
     "eslint-plugin-react-hooks": "^7.0.0",
     "globals": "^17.0.0",
+    "prettier": "^3.9.10",
     "supertest": "^7.2.0"
   }
 }

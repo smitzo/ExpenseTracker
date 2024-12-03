@@ -7,4 +7,12 @@ import './styles.css';
 import './layout.css';
 import './responsive.css';
 import './accessibility.css';
-createRoot(document.getElementById('root')).render(<ErrorBoundary><SessionProvider><FeedbackProvider><App/></FeedbackProvider></SessionProvider></ErrorBoundary>);
+createRoot(document.getElementById('root')).render(
+  <ErrorBoundary>
+    <SessionProvider>
+      <FeedbackProvider>
+        <App />
+      </FeedbackProvider>
+    </SessionProvider>
+  </ErrorBoundary>,
+);

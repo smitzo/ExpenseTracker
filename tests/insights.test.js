@@ -1,6 +1,67 @@
-import test from 'node:test';import assert from 'node:assert/strict';
-import {spendingForecast} from '../server/src/planning/forecast.js';import {suggestCategory} from '../server/src/insights/suggestions.js';import {unusualExpenses} from '../server/src/insights/unusual.js';import {detectRecurring} from '../server/src/insights/recurringDetection.js';import {savingsRate} from '../server/src/planning/savings.js';
-test('forecast refuses sparse and historical windows',()=>{assert.equal(spendingForecast([],'2026-10','2026-10-15').projected,null);assert.equal(spendingForecast([],'2026-09','2026-10-15').projected,null);const rows=Array.from({length:5},(_,i)=>({date:`2026-10-0${i+1}`,kind:'expense',amount:100}));assert.equal(spendingForecast(rows,'2026-10','2026-10-10').projected,1550);});
-test('category suggestions use owned history and disclose keyword basis',()=>{const cats=[{id:'a',name:'Food & dining'}];assert.equal(suggestCategory('Coffee',[],cats).confidence,'keyword');assert.equal(suggestCategory('Supercoffeestore',[],cats),null);assert.equal(suggestCategory('Merchant',[{description:'Merchant',categoryId:'a'},{description:'Merchant',categoryId:'a'}],cats).confidence,'history');assert.equal(suggestCategory('Merchant',[{description:'Merchant',categoryId:'foreign'}],cats),null);});
-test('unusual expenses need historical samples and compare category medians',()=>{const old=Array.from({length:5},()=>({date:'2026-09-01',kind:'expense',amount:100,categoryId:'a'}));const now={id:'x',date:'2026-10-01',kind:'expense',amount:400,categoryId:'a',description:'Review'};assert.equal(unusualExpenses([now],'2026-10').length,0);assert.equal(unusualExpenses([...old,now],'2026-10')[0].transactionId,'x');});
-test('recurring detector requires three plausible monthly intervals',()=>{const rows=['2026-07-01','2026-08-01','2026-09-01'].map(date=>({date,description:'Monthly music',amount:100,kind:'expense'}));assert.equal(detectRecurring(rows).length,1);assert.equal(detectRecurring(rows.slice(1)).length,0);assert.equal(savingsRate(0,100),null);assert.equal(savingsRate(1000,1200),-20);});
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { spendingForecast } from '../server/src/planning/forecast.js';
+import { suggestCategory } from '../server/src/insights/suggestions.js';
+import { unusualExpenses } from '../server/src/insights/unusual.js';
+import { detectRecurring } from '../server/src/insights/recurringDetection.js';
+import { savingsRate } from '../server/src/planning/savings.js';
+test('forecast refuses sparse and historical windows', () => {
+  assert.equal(spendingForecast([], '2026-10', '2026-10-15').projected, null);
+  assert.equal(spendingForecast([], '2026-09', '2026-10-15').projected, null);
+  const rows = Array.from({ length: 5 }, (_, i) => ({
+    date: `2026-10-0${i + 1}`,
+    kind: 'expense',
+    amount: 100,
+  }));
+  assert.equal(spendingForecast(rows, '2026-10', '2026-10-10').projected, 1550);
+});
+test('category suggestions use owned history and disclose keyword basis', () => {
+  const cats = [{ id: 'a', name: 'Food & dining' }];
+  assert.equal(suggestCategory('Coffee', [], cats).confidence, 'keyword');
+  assert.equal(suggestCategory('Supercoffeestore', [], cats), null);
+  assert.equal(
+    suggestCategory(
+      'Merchant',
+      [
+        { description: 'Merchant', categoryId: 'a' },
+        { description: 'Merchant', categoryId: 'a' },
+      ],
+      cats,
+    ).confidence,
+    'history',
+  );
+  assert.equal(
+    suggestCategory('Merchant', [{ description: 'Merchant', categoryId: 'foreign' }], cats),
+    null,
+  );
+});
+test('unusual expenses need historical samples and compare category medians', () => {
+  const old = Array.from({ length: 5 }, () => ({
+    date: '2026-09-01',
+    kind: 'expense',
+    amount: 100,
+    categoryId: 'a',
+  }));
+  const now = {
+    id: 'x',
+    date: '2026-10-01',
+    kind: 'expense',
+    amount: 400,
+    categoryId: 'a',
+    description: 'Review',
+  };
+  assert.equal(unusualExpenses([now], '2026-10').length, 0);
+  assert.equal(unusualExpenses([...old, now], '2026-10')[0].transactionId, 'x');
+});
+test('recurring detector requires three plausible monthly intervals', () => {
+  const rows = ['2026-07-01', '2026-08-01', '2026-09-01'].map((date) => ({
+    date,
+    description: 'Monthly music',
+    amount: 100,
+    kind: 'expense',
+  }));
+  assert.equal(detectRecurring(rows).length, 1);
+  assert.equal(detectRecurring(rows.slice(1)).length, 0);
+  assert.equal(savingsRate(0, 100), null);
+  assert.equal(savingsRate(1000, 1200), -20);
+});

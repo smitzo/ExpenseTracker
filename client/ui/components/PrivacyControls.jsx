@@ -3,4 +3,109 @@ import { Download, Trash2 } from 'lucide-react';
 import { request } from '../lib/api.js';
 import { useSession } from '../lib/Session.jsx';
 import { Modal } from './Modal.jsx';
-export function PrivacyControls() {const {demo,setUser}=useSession();const [confirm,setConfirm]=useState(false),[error,setError]=useState(''),[busy,setBusy]=useState(false);async function download(){setBusy(true);setError('');try{const data=await request('/account/export');const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='penny-account.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}catch(e){setError(e.message);}finally{setBusy(false);}}async function remove(e){e.preventDefault();setBusy(true);setError('');try{const f=new FormData(e.currentTarget);await request('/account',{method:'DELETE',body:{password:String(f.get('password'))}});setUser(null);}catch(e){setError(e.message);}finally{setBusy(false);}}return <section className="card section-gap"><h2>Your data, your choice.</h2><p className="section-intro">Download your complete account records, including archived entries. Deleting your account removes your workspace and revokes active sessions. Backups follow the operator’s retention policy.</p>{error&&!confirm&&<p className="error" role="alert">{error}</p>}<div className="inline"><button className="button secondary" disabled={demo||busy} onClick={download}><Download size={15}/>Download account data</button><button className="text-button negative" disabled={demo||busy} onClick={()=>{setError('');setConfirm(true);}}><Trash2 size={13}/> Delete account</button></div>{confirm&&<Modal title="Permanently delete your account?" onClose={()=>setConfirm(false)}><p className="section-intro">This removes all your transactions, budgets, categories and plans. Download your data first if you want a copy.</p><form className="form" onSubmit={remove}>{error&&<p className="error" role="alert">{error}</p>}<label>Confirm your password<input name="password" type="password" autoComplete="current-password" required maxLength={128}/></label><div className="form-actions"><button type="button" className="button secondary" onClick={()=>setConfirm(false)}>Keep my account</button><button className="button danger" disabled={busy}>Delete my account</button></div></form></Modal>}</section>;}
+export function PrivacyControls() {
+  const { demo, setUser } = useSession();
+  const [confirm, setConfirm] = useState(false),
+    [error, setError] = useState(''),
+    [busy, setBusy] = useState(false);
+  async function download() {
+    setBusy(true);
+    setError('');
+    try {
+      const data = await request('/account/export');
+      const url = URL.createObjectURL(
+        new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }),
+      );
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'penny-account.json';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function remove(e) {
+    e.preventDefault();
+    setBusy(true);
+    setError('');
+    try {
+      const f = new FormData(e.currentTarget);
+      await request('/account', {
+        method: 'DELETE',
+        body: { password: String(f.get('password')) },
+      });
+      setUser(null);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <section className="card section-gap">
+      <h2>Your data, your choice.</h2>
+      <p className="section-intro">
+        Download your complete account records, including archived entries. Deleting your account
+        removes your workspace and revokes active sessions. Backups follow the operator’s retention
+        policy.
+      </p>
+      {error && !confirm && (
+        <p className="error" role="alert">
+          {error}
+        </p>
+      )}
+      <div className="inline">
+        <button className="button secondary" disabled={demo || busy} onClick={download}>
+          <Download size={15} />
+          Download account data
+        </button>
+        <button
+          className="text-button negative"
+          disabled={demo || busy}
+          onClick={() => {
+            setError('');
+            setConfirm(true);
+          }}
+        >
+          <Trash2 size={13} /> Delete account
+        </button>
+      </div>
+      {confirm && (
+        <Modal title="Permanently delete your account?" onClose={() => setConfirm(false)}>
+          <p className="section-intro">
+            This removes all your transactions, budgets, categories and plans. Download your data
+            first if you want a copy.
+          </p>
+          <form className="form" onSubmit={remove}>
+            {error && (
+              <p className="error" role="alert">
+                {error}
+              </p>
+            )}
+            <label>
+              Confirm your password
+              <input
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                maxLength={128}
+              />
+            </label>
+            <div className="form-actions">
+              <button type="button" className="button secondary" onClick={() => setConfirm(false)}>
+                Keep my account
+              </button>
+              <button className="button danger" disabled={busy}>
+                Delete my account
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
+    </section>
+  );
+}

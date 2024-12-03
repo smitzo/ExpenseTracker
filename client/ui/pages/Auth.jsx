@@ -2,4 +2,133 @@ import { useState } from 'react';
 import { ArrowUpRight } from 'lucide-react';
 import { request } from '../lib/api.js';
 import { useSession } from '../lib/Session.jsx';
-export function Auth() {const {accept,error:sessionError,refresh}=useSession();const [register,setRegister]=useState(false),[error,setError]=useState(''),[busy,setBusy]=useState(false);async function submit(e){e.preventDefault();setBusy(true);setError('');try{const f=new FormData(e.currentTarget);const body={email:String(f.get('email')).trim().toLowerCase(),password:String(f.get('password'))};if(register)body.name=String(f.get('name')).trim();accept(await request('/auth/'+(register?'register':'login'),{method:'POST',body}));}catch(e){setError(e.message);}finally{setBusy(false);}}return <div className="auth-page"><section className="auth-story"><a className="brand" href="/"><span className="brand-icon">p</span>penny.</a><div><p className="eyebrow">LESS NOISE. MORE PERSPECTIVE.</p><h1>A little clarity.<br/>A lot more living.</h1><p>Make sense of the everyday. A thoughtful home for your spending, saving, and everything you’re looking forward to.</p><div className="auth-art" aria-hidden="true">{[28,39,34,55,48,71,79,100].map((v,i)=><span key={i} style={{height:v+'%'}}/>)}</div></div><small className="muted">Small habits. A little more freedom.</small></section><section className="auth-form"><p className="eyebrow muted">YOUR PERSONAL FINANCE WORKSPACE</p><h1>{register?'Make room for what matters.':'A familiar place to check in.'}</h1><p className="section-intro">{register?'A fresh start for a clearer financial picture.':'Welcome back. Your everyday, in balance.'}</p>{sessionError&&<div className="error">{sessionError}<button className="text-button" onClick={refresh}>Retry connection</button></div>}<form className="form" onSubmit={submit}>{error&&<p className="error" role="alert">{error}</p>}{register&&<label>Your name<input name="name" required maxLength={80} autoComplete="name"/></label>}<label>Email<input name="email" type="email" autoComplete="email" required maxLength={254} placeholder="you@example.com"/></label><label>Password<input name="password" type="password" autoComplete={register?'new-password':'current-password'} required minLength={register?12:1} maxLength={128}/></label>{register&&<p className="help-note">Use at least 12 characters. A few unrelated words make a memorable password.</p>}<button className="button" disabled={busy}>{busy?'Just a moment…':register?'Create your workspace':'Sign in'}<ArrowUpRight size={15}/></button></form><p className="auth-switch">{register?'Already have a workspace?':'New around here?'} <button className="text-button" onClick={()=>{setRegister(!register);setError('');}}>{register?'Sign in':'Create an account'}</button></p><div className="auth-switch" style={{borderTop:'1px solid var(--line)',paddingTop:24}}><p>Take a look around first.</p><a className="button secondary" href="/?demo=1">Explore the demo <ArrowUpRight size={14}/></a><p className="help-note">Sample data. No account needed.</p></div></section></div>; }
+export function Auth() {
+  const { accept, error: sessionError, refresh } = useSession();
+  const [register, setRegister] = useState(false),
+    [error, setError] = useState(''),
+    [busy, setBusy] = useState(false);
+  async function submit(e) {
+    e.preventDefault();
+    setBusy(true);
+    setError('');
+    try {
+      const f = new FormData(e.currentTarget);
+      const body = {
+        email: String(f.get('email')).trim().toLowerCase(),
+        password: String(f.get('password')),
+      };
+      if (register) body.name = String(f.get('name')).trim();
+      accept(await request('/auth/' + (register ? 'register' : 'login'), { method: 'POST', body }));
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <div className="auth-page">
+      <section className="auth-story">
+        <a className="brand" href="/">
+          <span className="brand-icon">p</span>penny.
+        </a>
+        <div>
+          <p className="eyebrow">LESS NOISE. MORE PERSPECTIVE.</p>
+          <h1>
+            A little clarity.
+            <br />A lot more living.
+          </h1>
+          <p>
+            Make sense of the everyday. A thoughtful home for your spending, saving, and everything
+            you’re looking forward to.
+          </p>
+          <div className="auth-art" aria-hidden="true">
+            {[28, 39, 34, 55, 48, 71, 79, 100].map((v, i) => (
+              <span key={i} style={{ height: v + '%' }} />
+            ))}
+          </div>
+        </div>
+        <small className="muted">Small habits. A little more freedom.</small>
+      </section>
+      <section className="auth-form">
+        <p className="eyebrow muted">YOUR PERSONAL FINANCE WORKSPACE</p>
+        <h1>{register ? 'Make room for what matters.' : 'A familiar place to check in.'}</h1>
+        <p className="section-intro">
+          {register
+            ? 'A fresh start for a clearer financial picture.'
+            : 'Welcome back. Your everyday, in balance.'}
+        </p>
+        {sessionError && (
+          <div className="error">
+            {sessionError}
+            <button className="text-button" onClick={refresh}>
+              Retry connection
+            </button>
+          </div>
+        )}
+        <form className="form" onSubmit={submit}>
+          {error && (
+            <p className="error" role="alert">
+              {error}
+            </p>
+          )}
+          {register && (
+            <label>
+              Your name
+              <input name="name" required maxLength={80} autoComplete="name" />
+            </label>
+          )}
+          <label>
+            Email
+            <input
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              maxLength={254}
+              placeholder="you@example.com"
+            />
+          </label>
+          <label>
+            Password
+            <input
+              name="password"
+              type="password"
+              autoComplete={register ? 'new-password' : 'current-password'}
+              required
+              minLength={register ? 12 : 1}
+              maxLength={128}
+            />
+          </label>
+          {register && (
+            <p className="help-note">
+              Use at least 12 characters. A few unrelated words make a memorable password.
+            </p>
+          )}
+          <button className="button" disabled={busy}>
+            {busy ? 'Just a moment…' : register ? 'Create your workspace' : 'Sign in'}
+            <ArrowUpRight size={15} />
+          </button>
+        </form>
+        <p className="auth-switch">
+          {register ? 'Already have a workspace?' : 'New around here?'}{' '}
+          <button
+            className="text-button"
+            onClick={() => {
+              setRegister(!register);
+              setError('');
+            }}
+          >
+            {register ? 'Sign in' : 'Create an account'}
+          </button>
+        </p>
+        <div className="auth-switch" style={{ borderTop: '1px solid var(--line)', paddingTop: 24 }}>
+          <p>Take a look around first.</p>
+          <a className="button secondary" href="/?demo=1">
+            Explore the demo <ArrowUpRight size={14} />
+          </a>
+          <p className="help-note">Sample data. No account needed.</p>
+        </div>
+      </section>
+    </div>
+  );
+}
