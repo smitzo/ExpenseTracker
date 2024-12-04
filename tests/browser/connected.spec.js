@@ -87,3 +87,20 @@ test('expired account sessions return the workspace to sign-in', async ({ page }
   await page.getByRole('link', { name: 'Transactions', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'A familiar place to check in.' })).toBeVisible();
 });
+
+test('account controls download private records and delete after password review', async ({
+  page,
+}) => {
+  await register(page);
+  await page.getByRole('link', { name: 'Settings', exact: true }).click();
+  const waiting = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Download account data', exact: true }).click();
+  expect((await waiting).suggestedFilename()).toBe('penny-account.json');
+  await page.getByRole('button', { name: 'Delete account', exact: true }).click();
+  await page
+    .getByRole('dialog')
+    .getByLabel('Confirm your password')
+    .fill('browser test correct horse battery');
+  await page.getByRole('button', { name: 'Delete my account', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'A familiar place to check in.' })).toBeVisible();
+});

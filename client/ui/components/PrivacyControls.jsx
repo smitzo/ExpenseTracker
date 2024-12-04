@@ -57,7 +57,7 @@ export function PrivacyControls() {
           {error}
         </p>
       )}
-      <div className="inline">
+      <div className="inline privacy-actions">
         <button className="button secondary" disabled={demo || busy} onClick={download}>
           <Download size={15} />
           Download account data

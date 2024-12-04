@@ -12,6 +12,7 @@ test('mobile navigation reaches every tool without horizontal page overflow', as
   await expect(
     page.getByRole('heading', { name: 'A workspace that feels like you.' }),
   ).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.getByRole('link', { name: 'Transactions', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'The everyday details.' })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

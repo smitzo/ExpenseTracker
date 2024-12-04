@@ -312,3 +312,7 @@
     margin-left: 0;
   }
 }
+
+.privacy-actions {
+  flex-wrap: wrap;
+}
