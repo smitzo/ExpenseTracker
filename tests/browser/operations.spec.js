@@ -24,25 +24,21 @@ test('legacy migration dry-run and idempotent apply preserve exact owned amounts
   try {
     const userId = new mongoose.Types.ObjectId(),
       categoryId = new mongoose.Types.ObjectId();
-    await db
-      .collection('users')
-      .insertOne({
-        _id: userId,
-        firstName: 'Legacy',
-        lastName: 'Fixture',
-        email: 'legacy@example.com',
-        password: await bcrypt.hash('legacy-password', 4),
-        categories: [{ _id: categoryId, label: 'Food' }],
-      });
-    await db
-      .collection('transactions')
-      .insertOne({
-        user_id: userId,
-        category_id: categoryId,
-        amount: 123.45,
-        description: 'Migration fixture',
-        date: new Date('2026-10-01T00:00:00Z'),
-      });
+    await db.collection('users').insertOne({
+      _id: userId,
+      firstName: 'Legacy',
+      lastName: 'Fixture',
+      email: 'legacy@example.com',
+      password: await bcrypt.hash('legacy-password', 4),
+      categories: [{ _id: categoryId, label: 'Food' }],
+    });
+    await db.collection('transactions').insertOne({
+      user_id: userId,
+      category_id: categoryId,
+      amount: 123.45,
+      description: 'Migration fixture',
+      date: new Date('2026-10-01T00:00:00Z'),
+    });
     const options = {
       env: { ...process.env, MONGODB_URI: uriFor(dbName), LEGACY_CURRENCY: 'INR' },
       timeout: 15000,

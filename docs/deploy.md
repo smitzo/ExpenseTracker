@@ -8,3 +8,5 @@ Before production: npm run check; a MongoDB-enabled integration run; npm run tes
 The deployable configuration is prepared locally. This workspace has no configured canonical remote or Vercel project. No push or live publication has been performed. Publishing requires the repository destination, Vercel access and database environment; supply those only through secure hosting settings. Git pushes are done only on explicit request.
 
 Rollback by selecting the previous verified Vercel deployment. Do not automatically roll back database changes. Reconcile any v2 writes before considering legacy handlers. Confirm health and account origin again after rollback. Monitor 5xx, authentication failures, MongoDB pool usage, latency and unexpected spend. Set error-rate and availability alerts in hosting.
+
+Implementation references: [Vercel Vite deployment](https://vercel.com/docs/frameworks/frontend/vite), [Vercel Express support](https://vercel.com/docs/frameworks/backend/express), and [Mongoose serverless connection guidance](https://mongoosejs.com/docs/lambda.html). These describe platform behavior; they are not evidence that this project has been deployed.
