@@ -14,8 +14,12 @@ export function loadConfig(env = process.env) {
     throw new Error('APP_ORIGIN must be an origin without a path');
   if (
     config.NODE_ENV === 'production' &&
-    (url.protocol !== 'https:' || config.RATE_SECRET.startsWith('replace-'))
+    (url.protocol !== 'https:' ||
+      /^(replace-|local-development-|test-secret)/i.test(config.RATE_SECRET))
   )
     throw new Error('Production requires HTTPS and a random RATE_SECRET');
+  const mongo = new URL(config.MONGODB_URI);
+  if (!mongo.pathname || mongo.pathname === '/')
+    throw new Error('MONGODB_URI must name a database');
   return Object.freeze(config);
 }

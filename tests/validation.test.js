@@ -46,3 +46,16 @@ test('CSV output neutralizes leading formula characters', () => {
     assert.ok(csvCell(v).startsWith('"\''));
   assert.equal(csvCell('hello'), '"hello"');
 });
+
+test('production rejects bundled local secrets and unnamed databases', () => {
+  const env = {
+    NODE_ENV: 'production',
+    APP_ORIGIN: 'https://penny.example.com',
+    MONGODB_URI: 'mongodb://localhost/penny',
+    RATE_SECRET: 'local-development-secret-please-never-deploy',
+  };
+  assert.throws(() => loadConfig(env));
+  assert.throws(() =>
+    loadConfig({ ...env, RATE_SECRET: 'z'.repeat(32), MONGODB_URI: 'mongodb://localhost/' }),
+  );
+});
