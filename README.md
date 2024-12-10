@@ -33,7 +33,7 @@ npm audit --audit-level=high
 `npm run check` checks formatting, lint, Node tests and the Vite production build. Set TEST_MONGODB_URI to enable database tests; test databases use random penny_test_ names and are removed afterward. The Chromium suite expects the local MongoDB above or TEST_MONGODB_URI, and uses Google Chrome at `/usr/bin/google-chrome`; set CHROME_PATH for another installation. Browser tests create disposable accounts and databases, exercise real API flows and include the full database-enabled Node suite. Recovery drills additionally need mongodump/mongorestore. CI provides a MongoDB service; its optional recovery drill requires Database Tools and MONGODB_TOOLS=1.
 
 ## Production and Vercel
-`npm run build` writes `client/dist`. `npm start` serves the built client and API locally. Vercel uses the root [configuration](vercel.json), static client and import-safe `api/index.js` handler, backed by external durable MongoDB. Follow the [deployment runbook](docs/deploy.md) and [release checklist](docs/release-checklist.md). Hosting, production data migration, production restore acceptance and hosted smoke remain pending until configured and verified.
+`npm run build` writes `client/dist`. `npm start` serves the built client and API locally. Vercel uses the root [configuration](vercel.json), static client and import-safe `api/index.js` handler, backed by external durable MongoDB. Set NODE_ENV=production, MONGODB_URI, RATE_SECRET and an exact HTTPS APP_ORIGIN in the hosting environment. Run `npm run indexes -w server` against the intended database before traffic. Validate a preview on its actual hostname, including `/api/health`, `/api/ready`, cookies, account isolation and import/export. Keep preview and production databases separate. Hosting, production data migration, production restore acceptance and hosted smoke remain pending until configured and verified.
 
 ## Code map
 - `client/ui`: active React screens, components and workspace state.
@@ -41,9 +41,9 @@ npm audit --audit-level=high
 - `api`: Vercel adapter; importing it opens no listener or database connection.
 - `tests`: exact money/calendar checks, MongoDB HTTP integration and Chromium acceptance.
 - `scripts`: development, source audit, migration and private backups.
-- `docs`: [architecture](docs/architecture.md), [API](docs/api.md), [security](docs/security.md), [privacy](docs/privacy.md), [migration](docs/migration.md), [recovery](docs/recovery.md), [product guide](docs/product-guide.md), [roadmap](docs/roadmap.md).
+- `docs`: [architecture](docs/architecture.md), [API](docs/api.md), [security](docs/security.md), [privacy](docs/privacy.md), [migration](docs/migration.md), [recovery](docs/recovery.md), [product guide](docs/product-guide.md).
 
 The original CRA client and legacy server files remain reference material outside active imports. Their nested lockfiles describe the old dependency trees; use the root lockfile and root commands. OpenSpec and assistant instructions stay local and ignored as requested. Tracked docs are the fresh-clone source of truth.
 
-## Local history in this workspace
-The provided `.git` mount was empty and read-only. Commits are therefore preserved in ignored `.git-local` and reviewed with `git --git-dir=.git-local --work-tree=. log`. A portable bundle is available under `.local/penny-history.bundle`; clone that bundle into a new writable folder to obtain a normal Git checkout. No remote was inferred, pushed or rewritten.
+## Git and local planning
+The workspace uses a `.git` pointer to the existing ignored `.git-local` history; normal Git commands work without rewriting commits. Fresh clones use ordinary Git metadata. OpenSpec plans, task notes, review screenshots and hosting handoff reports remain ignored. Essential setup and hosting commands live here, while reusable engineering material remains in `docs/`.

@@ -31,3 +31,11 @@ VERCEL.md
 DEMO_SHOWCASE.md
 VALIDATION.md
 docs/images/demo-showcase-*
+
+# Local execution plans, reports and provider handoff material
+docs/verification.md
+docs/roadmap.md
+docs/release-checklist.md
+docs/deploy.md
+**/*-validation-report.md
+**/*-handoff.md
