@@ -18,8 +18,7 @@ export function loadConfig(env = process.env) {
       /^(replace-|local-development-|test-secret)/i.test(config.RATE_SECRET))
   )
     throw new Error('Production requires HTTPS and a random RATE_SECRET');
-  const mongo = new URL(config.MONGODB_URI);
-  if (!mongo.pathname || mongo.pathname === '/')
-    throw new Error('MONGODB_URI must name a database');
+  const databaseName = config.MONGODB_URI.match(/^mongodb(?:\+srv)?:\/\/[^/]+\/([^?]+)/)?.[1];
+  if (!databaseName) throw new Error('MONGODB_URI must name a database');
   return Object.freeze(config);
 }

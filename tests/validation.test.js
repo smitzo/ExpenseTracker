@@ -59,3 +59,12 @@ test('production rejects bundled local secrets and unnamed databases', () => {
     loadConfig({ ...env, RATE_SECRET: 'z'.repeat(32), MONGODB_URI: 'mongodb://localhost/' }),
   );
 });
+
+test('configuration accepts replica-set authorities without WHATWG URL restrictions', () => {
+  const env = {
+    APP_ORIGIN: 'http://localhost:5173',
+    MONGODB_URI: 'mongodb://host1:27017,host2:27017/penny?replicaSet=rs0',
+    RATE_SECRET: 'z'.repeat(32),
+  };
+  assert.equal(loadConfig(env).MONGODB_URI, env.MONGODB_URI);
+});
