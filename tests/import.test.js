@@ -42,3 +42,18 @@ test(
     assert.ok(output.text.includes('"\'=SUM(A1)"'));
   },
 );
+
+test('completed imports replay after their category is renamed', { skip: !enabled }, async () => {
+  const a = await account(ctx);
+  const c = (await a.agent.get('/api/categories')).body.data[0];
+  const text = csv.replace(',,Note', ',' + c.name + ',Note'),
+    key = randomUUID();
+  await write(a, 'post', '/imports/commit', { csv: text, key }).expect(200);
+  await write(a, 'patch', '/categories/' + c.id, {
+    name: 'Renamed category',
+    color: c.color,
+  }).expect(200);
+  const result = await write(a, 'post', '/imports/commit', { csv: text, key }).expect(200);
+  assert.equal(result.body.replay, true);
+  assert.equal(result.body.imported, 1);
+});

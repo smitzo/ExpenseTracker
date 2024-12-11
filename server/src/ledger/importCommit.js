@@ -1,11 +1,14 @@
 import { z } from 'zod';
 import { previewRows, csvRequest } from './importPreview.js';
-import { claimBatch, payloadHash } from '../db/idempotency.js';
+import { claimBatch, findBatch, payloadHash } from '../db/idempotency.js';
 import { collection } from '../db/connection.js';
 import { record } from '../domain/identifiers.js';
 import { ensure } from '../domain/errors.js';
 export async function commitImport(req, res) {
   const { csv, key } = csvRequest.extend({ key: z.uuid() }).parse(req.body);
+  const fingerprint = payloadHash(csv);
+  const existing = await findBatch(req.db, req.user._id, key, fingerprint);
+  if (existing?.completed) return res.json({ imported: existing.count, replay: true });
   const rows = await previewRows(req, csv);
   ensure(
     rows.length > 0 && rows.every((r) => r.data),
@@ -13,7 +16,7 @@ export async function commitImport(req, res) {
     'IMPORT_INVALID',
     'Fix every preview error before importing.',
   );
-  const prior = await claimBatch(req.db, req.user._id, key, payloadHash(csv));
+  const prior = await claimBatch(req.db, req.user._id, key, fingerprint);
   if (!prior?.completed) {
     const ops = rows.map((r, importIndex) => ({
       updateOne: {

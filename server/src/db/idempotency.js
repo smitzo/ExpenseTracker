@@ -3,6 +3,12 @@ import { createHash } from 'node:crypto';
 import { AppError } from '../domain/errors.js';
 export const payloadHash = (body) =>
   createHash('sha256').update(JSON.stringify(body)).digest('hex');
+export async function findBatch(db, ownerId, key, fingerprint) {
+  const prior = await collection(db, 'batches').findOne({ _id: ownerId + ':' + key });
+  if (prior && prior.fingerprint !== fingerprint)
+    throw new AppError(409, 'KEY_REUSED', 'Use a new import key for different data.');
+  return prior;
+}
 export async function claimBatch(db, ownerId, key, fingerprint) {
   const c = collection(db, 'batches');
   try {
