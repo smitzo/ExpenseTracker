@@ -9,16 +9,17 @@ export async function commitImport(req, res) {
   const fingerprint = payloadHash(csv);
   const existing = await findBatch(req.db, req.user._id, key, fingerprint);
   if (existing?.completed) return res.json({ imported: existing.count, replay: true });
-  const rows = await previewRows(req, csv);
+  const rows = existing?.rows || (await previewRows(req, csv));
   ensure(
     rows.length > 0 && rows.every((r) => r.data),
     400,
     'IMPORT_INVALID',
     'Fix every preview error before importing.',
   );
-  const prior = await claimBatch(req.db, req.user._id, key, fingerprint);
+  const prior = await claimBatch(req.db, req.user._id, key, fingerprint, rows);
+  const accepted = prior?.rows || rows;
   if (!prior?.completed) {
-    const ops = rows.map((r, importIndex) => ({
+    const ops = accepted.map((r, importIndex) => ({
       updateOne: {
         filter: { ownerId: req.user._id, importKey: key, importIndex },
         update: {
@@ -36,8 +37,8 @@ export async function commitImport(req, res) {
     await collection(req.db, 'ledger').bulkWrite(ops, { ordered: true });
     await collection(req.db, 'batches').updateOne(
       { _id: req.user._id + ':' + key },
-      { $set: { completed: true, count: rows.length } },
+      { $set: { completed: true, count: accepted.length } },
     );
   }
-  res.json({ imported: rows.length, replay: Boolean(prior?.completed) });
+  res.json({ imported: accepted.length, replay: Boolean(prior?.completed) });
 }

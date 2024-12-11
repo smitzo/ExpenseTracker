@@ -9,10 +9,16 @@ export async function findBatch(db, ownerId, key, fingerprint) {
     throw new AppError(409, 'KEY_REUSED', 'Use a new import key for different data.');
   return prior;
 }
-export async function claimBatch(db, ownerId, key, fingerprint) {
+export async function claimBatch(db, ownerId, key, fingerprint, rows) {
   const c = collection(db, 'batches');
   try {
-    await c.insertOne({ _id: ownerId + ':' + key, ownerId, fingerprint, createdAt: new Date() });
+    await c.insertOne({
+      _id: ownerId + ':' + key,
+      ownerId,
+      fingerprint,
+      rows,
+      createdAt: new Date(),
+    });
     return null;
   } catch (e) {
     if (e.code !== 11000) throw e;

@@ -57,3 +57,22 @@ test('completed imports replay after their category is renamed', { skip: !enable
   assert.equal(result.body.replay, true);
   assert.equal(result.body.imported, 1);
 });
+
+test('interrupted imports resume the accepted category snapshot', { skip: !enabled }, async () => {
+  const a = await account(ctx);
+  const c = (await a.agent.get('/api/categories')).body.data[0];
+  const text = csv.replace(',,Note', ',' + c.name + ',Note'),
+    key = randomUUID();
+  const { previewRows } = await import('../server/src/ledger/importPreview.js');
+  const { claimBatch, payloadHash } = await import('../server/src/db/idempotency.js');
+  const rows = await previewRows({ db: ctx.db, user: { _id: a.user.id } }, text);
+  await claimBatch(ctx.db, a.user.id, key, payloadHash(text), rows);
+  await write(a, 'patch', '/categories/' + c.id, {
+    name: 'Another renamed category',
+    color: c.color,
+  }).expect(200);
+  await write(a, 'post', '/imports/commit', { csv: text, key }).expect(200);
+  const result = await a.agent.get('/api/transactions').expect(200);
+  assert.equal(result.body.meta.total, 1);
+  assert.equal(result.body.data[0].categoryId, c.id);
+});
