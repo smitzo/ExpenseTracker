@@ -9,7 +9,7 @@ export const authenticate = (config) => async (req, _res, next) => {
     throw new AppError(401, 'UNAUTHENTICATED', 'Sign in to continue.');
   const session = await sessions(req.db).find(tokenHash(token));
   const user = session && (await users(req.db).byId(session.ownerId));
-  if (!user)
+  if (!user || (session.credentialVersion || 0) !== (user.credentialVersion || 0))
     throw new AppError(401, 'UNAUTHENTICATED', 'Your session has expired. Please sign in.');
   req.csrf = tokenHash('csrf:' + token);
   req.session = session;

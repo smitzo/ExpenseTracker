@@ -1,7 +1,7 @@
 import { randomBytes, createHash } from 'node:crypto';
 import { newId } from '../domain/identifiers.js';
 export const tokenHash = (token) => createHash('sha256').update(token).digest('hex');
-export function makeSession(ownerId, days) {
+export function makeSession(ownerId, days, credentialVersion = 0) {
   const token = randomBytes(32).toString('hex');
   const csrf = tokenHash('csrf:' + token);
   return {
@@ -11,6 +11,7 @@ export function makeSession(ownerId, days) {
       _id: tokenHash(token),
       publicId: newId(),
       ownerId,
+      credentialVersion,
       csrfHash: tokenHash(csrf),
       createdAt: new Date(),
       expiresAt: new Date(Date.now() + days * 86400000),

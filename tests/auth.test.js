@@ -56,3 +56,22 @@ test('persistent login throttling blocks repeated attempts', { skip: !enabled },
     .send({ email: a.user.email, password: 'bad password long enough' })
     .expect(429);
 });
+
+test(
+  'sessions inserted after password revocation cannot reuse an old credential revision',
+  { skip: !enabled },
+  async () => {
+    const a = await account(ctx);
+    const { makeSession } = await import('../server/src/security/sessionTokens.js');
+    const delayed = makeSession(a.user.id, 7, 0);
+    await write(a, 'put', '/password', {
+      currentPassword: 'correct horse battery staple',
+      password: 'a new unrelated word sequence',
+    }).expect(204);
+    await ctx.db.collection('v2_sessions').insertOne(delayed.record);
+    await a.agent
+      .get('/api/auth/session')
+      .set('Cookie', 'penny=' + delayed.token)
+      .expect(401);
+  },
+);

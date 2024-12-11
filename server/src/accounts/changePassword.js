@@ -16,7 +16,17 @@ export const changePassword = (config) => async (req, res) => {
     'CREDENTIALS',
     'Your current password is incorrect.',
   );
-  await users(req.db).update(req.user._id, { passwordHash: await hashPassword(body.password) });
+  const updated = await users(req.db).changePassword(
+    req.user._id,
+    req.user.passwordHash,
+    await hashPassword(body.password),
+  );
+  ensure(
+    updated,
+    409,
+    'CREDENTIALS_CHANGED',
+    'Your credentials changed. Sign in before trying again.',
+  );
   await sessions(req.db).revokeAll(req.user._id);
   clearSession(res, config);
   res.status(204).end();

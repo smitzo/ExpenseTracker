@@ -23,7 +23,7 @@ export const register = (config) => async (req, res) => {
     await collection(req.db, 'users').deleteOne({ _id: user._id });
     throw error;
   }
-  const session = makeSession(user._id, config.SESSION_DAYS);
+  const session = makeSession(user._id, config.SESSION_DAYS, user.credentialVersion || 0);
   await sessions(req.db).create(session.record);
   setSession(res, config, session.token, session.record.expiresAt);
   res.status(201).json({ user: safeUser(user), csrf: session.csrf });

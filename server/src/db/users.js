@@ -9,6 +9,12 @@ export const users = (db) => ({
     await collection(db, 'users').insertOne(user);
     return user;
   },
+  changePassword: (_id, expectedHash, passwordHash) =>
+    collection(db, 'users').findOneAndUpdate(
+      { _id, passwordHash: expectedHash },
+      { $set: { passwordHash }, $inc: { credentialVersion: 1 } },
+      { returnDocument: 'after' },
+    ),
   update: (_id, fields) =>
     collection(db, 'users').findOneAndUpdate(
       { _id },
