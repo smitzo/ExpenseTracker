@@ -3,13 +3,18 @@ import { ledger } from '../db/ledger.js';
 import { pageSchema, pageMeta } from '../domain/pagination.js';
 import { daySchema } from '../domain/dates.js';
 import { idSchema, publicRecord } from '../domain/identifiers.js';
-const schema = pageSchema.extend({
-  q: z.string().trim().max(100).optional(),
-  kind: z.enum(['income', 'expense']).optional(),
-  categoryId: idSchema.optional(),
-  from: daySchema.optional(),
-  to: daySchema.optional(),
-});
+const schema = pageSchema
+  .extend({
+    q: z.string().trim().max(100).optional(),
+    kind: z.enum(['income', 'expense']).optional(),
+    categoryId: idSchema.optional(),
+    from: daySchema.optional(),
+    to: daySchema.optional(),
+  })
+  .refine((q) => !q.from || !q.to || q.from <= q.to, {
+    message: 'End date must not precede start date.',
+    path: ['to'],
+  });
 export async function listTransactions(req, res) {
   const q = schema.parse(req.query);
   const filter = {};

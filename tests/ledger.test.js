@@ -66,3 +66,28 @@ test(
     }).expect(409);
   },
 );
+
+test(
+  'date filters reject reversed ranges and search treats regex symbols literally',
+  { skip: !enabled },
+  async () => {
+    const a = await account(ctx);
+    await a.agent.get('/api/transactions?from=2026-10-20&to=2026-10-01').expect(400);
+    await write(a, 'post', '/transactions', {
+      description: 'Coffee (large)+',
+      amount: 100,
+      kind: 'expense',
+      date: '2026-10-01',
+    }).expect(201);
+    await write(a, 'post', '/transactions', {
+      description: 'Something else',
+      amount: 100,
+      kind: 'expense',
+      date: '2026-10-01',
+    }).expect(201);
+    const result = await a.agent
+      .get('/api/transactions?q=' + encodeURIComponent('(large)+'))
+      .expect(200);
+    assert.equal(result.body.meta.total, 1);
+  },
+);
