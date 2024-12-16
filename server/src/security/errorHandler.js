@@ -25,6 +25,19 @@ export function errorHandler(error, req, res, _next) {
     code = 'INVALID_JSON';
     message = 'The request is not valid JSON.';
   }
+  if (
+    [
+      'MongoNetworkError',
+      'MongoNetworkTimeoutError',
+      'MongoServerSelectionError',
+      'MongooseServerSelectionError',
+    ].includes(error.name)
+  ) {
+    status = 503;
+    code = 'UNAVAILABLE';
+    message = 'The database is temporarily unavailable. Please retry shortly.';
+    res.set('Retry-After', '5');
+  }
   if (status >= 500 && process.env.NODE_ENV !== 'test')
     console.error(
       JSON.stringify({ requestId: req.requestId, errorType: error.name, code: 'INTERNAL' }),
