@@ -75,3 +75,13 @@ test(
       .expect(401);
   },
 );
+
+test('short throttle windows expose their actual retry interval', { skip: !enabled }, async () => {
+  const { throttle } = await import('../server/src/db/rateLimits.js');
+  const key = 'window-' + crypto.randomUUID();
+  await throttle(ctx.db, config.RATE_SECRET, key, 1, 60);
+  await assert.rejects(
+    throttle(ctx.db, config.RATE_SECRET, key, 1, 60),
+    (e) => e.status === 429 && e.retryAfter >= 1 && e.retryAfter <= 60,
+  );
+});

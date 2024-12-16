@@ -42,6 +42,6 @@ export function errorHandler(error, req, res, _next) {
     console.error(
       JSON.stringify({ requestId: req.requestId, errorType: error.name, code: 'INTERNAL' }),
     );
-  if (status === 429) res.set('Retry-After', '900');
+  if (status === 429) res.set('Retry-After', String(error.retryAfter || 900));
   res.status(status).json({ error: { code, message, details, requestId: req.requestId } });
 }

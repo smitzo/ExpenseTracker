@@ -21,6 +21,9 @@ export async function throttle(db, secret, key, limit, seconds = 900) {
       { returnDocument: 'after' },
     );
   }
-  if (row.count > limit)
-    throw new AppError(429, 'RATE_LIMIT', 'Too many attempts. Please try again later.');
+  if (row.count > limit) {
+    const error = new AppError(429, 'RATE_LIMIT', 'Too many attempts. Please try again later.');
+    error.retryAfter = Math.max(1, Math.ceil(((bucket + 1) * seconds * 1000 - Date.now()) / 1000));
+    throw error;
+  }
 }
