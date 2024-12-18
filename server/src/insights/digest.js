@@ -21,7 +21,7 @@ export async function digest(req, res) {
   const month = monthSchema.parse(req.query.month);
   const owner = req.user._id;
   const rows = await ledger(req.db).all(owner),
-    cats = await categories(req.db).list(owner),
+    cats = await categories(req.db).history(owner),
     plans = await budgets(req.db).list(owner, month),
     rules = await recurring(req.db).list(owner);
   const summary = monthlySummary(rows, month),
@@ -50,7 +50,7 @@ export async function suggestion(req, res) {
     data: suggestCategory(
       description,
       await ledger(req.db).all(req.user._id),
-      await categories(req.db).list(req.user._id),
+      await categories(req.db).history(req.user._id),
     ),
   });
 }

@@ -21,7 +21,10 @@ export function ActivityTable({ transactions, categories, onEdit, onArchive }) {
         </thead>
         <tbody>
           {transactions.map((t) => {
-            const c = map.get(t.categoryId);
+            const c = map.get(t.categoryId) || {
+              name: t.categoryName || 'Uncategorized',
+              color: t.categoryColor || 'slate',
+            };
             const Icon =
               t.kind === 'income'
                 ? ArrowDownLeft

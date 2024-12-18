@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { categories } from '../db/categories.js';
 import { ledger } from '../db/ledger.js';
 import { pageSchema, pageMeta } from '../domain/pagination.js';
 import { daySchema } from '../domain/dates.js';
@@ -32,5 +33,13 @@ export async function listTransactions(req, res) {
   const store = ledger(req.db);
   const total = await store.count(req.user._id, filter);
   const rows = await store.list(req.user._id, filter, (q.page - 1) * q.limit, q.limit);
-  res.json({ data: rows.map(publicRecord), meta: pageMeta(q.page, q.limit, total) });
+  const names = new Map((await categories(req.db).history(req.user._id)).map((c) => [c._id, c]));
+  res.json({
+    data: rows.map((row) => ({
+      ...publicRecord(row),
+      categoryName: names.get(row.categoryId)?.name || 'Uncategorized',
+      categoryColor: names.get(row.categoryId)?.color || 'slate',
+    })),
+    meta: pageMeta(q.page, q.limit, total),
+  });
 }

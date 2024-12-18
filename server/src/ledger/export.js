@@ -7,7 +7,9 @@ export function csvCell(value) {
 }
 export async function exportTransactions(req, res) {
   const rows = await ledger(req.db).all(req.user._id);
-  const names = new Map((await categories(req.db).list(req.user._id)).map((c) => [c._id, c.name]));
+  const names = new Map(
+    (await categories(req.db).history(req.user._id)).map((c) => [c._id, c.name]),
+  );
   const csv = [
     'date,description,amount,kind,category,note',
     ...rows.map((t) =>

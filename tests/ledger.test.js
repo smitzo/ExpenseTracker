@@ -91,3 +91,26 @@ test(
     assert.equal(result.body.meta.total, 1);
   },
 );
+
+test(
+  'archived categories retain their labels in ledger summaries and CSV',
+  { skip: !enabled },
+  async () => {
+    const a = await account(ctx);
+    const c = (await a.agent.get('/api/categories')).body.data[0];
+    await write(a, 'post', '/transactions', {
+      description: 'Historical label',
+      date: '2026-10-01',
+      amount: 100,
+      kind: 'expense',
+      categoryId: c.id,
+    }).expect(201);
+    await write(a, 'delete', '/categories/' + c.id).expect(204);
+    const ledger = await a.agent.get('/api/transactions').expect(200);
+    assert.equal(ledger.body.data[0].categoryName, c.name);
+    const digest = await a.agent.get('/api/digest?month=2026-10').expect(200);
+    assert.equal(digest.body.categories[0].name, c.name);
+    const csv = await a.agent.get('/api/transactions/export').expect(200);
+    assert.ok(csv.text.includes(c.name));
+  },
+);
