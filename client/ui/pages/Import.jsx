@@ -1,9 +1,10 @@
+import { pendingImportKey, completeImportKey } from '../lib/importKeys.js';
 import { useState } from 'react';
 import { Upload, FileText, Check } from 'lucide-react';
 import { request } from '../lib/api.js';
 import { useSession } from '../lib/Session.jsx';
 export function Import({ reload }) {
-  const { demo } = useSession();
+  const { demo, user } = useSession();
   const [csv, setCsv] = useState(''),
     [preview, setPreview] = useState(null),
     [key, setKey] = useState(() => crypto.randomUUID()),
@@ -29,7 +30,9 @@ export function Import({ reload }) {
     setBusy(true);
     setError('');
     try {
+      const retryKey = await pendingImportKey(user.id, csv);
       const result = await request('/imports/preview', { method: 'POST', body: { csv } });
+      setKey(retryKey);
       setPreview(result.data);
     } catch (e) {
       setError(e.message);
@@ -42,6 +45,7 @@ export function Import({ reload }) {
     setError('');
     try {
       const r = await request('/imports/commit', { method: 'POST', body: { csv, key } });
+      completeImportKey(user.id, key);
       setMessage(`${r.imported} entries imported${r.replay ? ' (already completed)' : ''}.`);
       setPreview(null);
       setCsv('');

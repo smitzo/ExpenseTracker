@@ -120,24 +120,59 @@ test('overview loads historical month activity beyond the recent hundred entries
     createdAt: new Date(),
     updatedAt: new Date(),
   };
-  await db
-    .collection('v2_ledger')
-    .insertMany([
-      ...Array.from({ length: 105 }, (_, i) => ({
-        ...base,
-        _id: randomUUID(),
-        date: '2026-10-01',
-        description: 'Recent ' + i,
-        amount: 100,
-      })),
-      {
-        ...base,
-        _id: randomUUID(),
-        date: '2026-06-10',
-        description: 'Historical lunch',
-        amount: 12529,
-      },
-    ]);
+  await db.collection('v2_ledger').insertMany([
+    ...Array.from({ length: 105 }, (_, i) => ({
+      ...base,
+      _id: randomUUID(),
+      date: '2026-10-01',
+      description: 'Recent ' + i,
+      amount: 100,
+    })),
+    {
+      ...base,
+      _id: randomUUID(),
+      date: '2026-06-10',
+      description: 'Historical lunch',
+      amount: 12529,
+    },
+  ]);
   await page.getByLabel('Overview month').fill('2026-06');
   await expect(page.getByRole('cell', { name: 'Historical lunch', exact: true })).toBeVisible();
+});
+
+test('an import retry after lost response and navigation keeps the original batch key', async ({
+  page,
+}) => {
+  await register(page);
+  await page.getByRole('link', { name: 'Import data', exact: true }).click();
+  const csv =
+    'date,description,amount,kind,category,note\n2026-10-01,Lost response import,12.29,expense,,';
+  const keys = [];
+  page.on('request', (r) => {
+    if (r.url().endsWith('/api/imports/commit')) keys.push(r.postDataJSON().key);
+  });
+  await page.getByLabel('Or paste CSV').fill(csv);
+  await page.getByRole('button', { name: 'Preview entries' }).click();
+  await expect(page.getByRole('cell', { name: 'Ready', exact: true })).toBeVisible();
+  await page.route(
+    '**/api/imports/commit',
+    async (route) => {
+      await route.fetch();
+      await route.abort('failed');
+    },
+    { times: 1 },
+  );
+  await page.getByRole('button', { name: 'Confirm import' }).click();
+  await expect(page.getByRole('alert')).toBeVisible();
+  await page.getByRole('link', { name: 'Overview', exact: true }).click();
+  await page.getByRole('link', { name: 'Import data', exact: true }).click();
+  await page.getByLabel('Or paste CSV').fill(csv);
+  await page.getByRole('button', { name: 'Preview entries' }).click();
+  await expect(page.getByRole('cell', { name: 'Ready', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Confirm import' }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'already completed' })).toBeVisible();
+  expect(keys).toHaveLength(2);
+  expect(keys[0]).toBe(keys[1]);
+  const rows = await (await page.request.get(origin + '/api/transactions?q=Lost')).json();
+  expect(rows.meta.total).toBe(1);
 });
