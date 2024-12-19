@@ -104,3 +104,40 @@ test('account controls download private records and delete after password review
   await page.getByRole('button', { name: 'Delete my account', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'A familiar place to check in.' })).toBeVisible();
 });
+
+test('overview loads historical month activity beyond the recent hundred entries', async ({
+  page,
+}) => {
+  await register(page);
+  const profile = await (await page.request.get(origin + '/api/auth/session')).json();
+  const base = {
+    ownerId: profile.user.id,
+    kind: 'expense',
+    categoryId: null,
+    note: '',
+    version: 1,
+    archived: false,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+  await db
+    .collection('v2_ledger')
+    .insertMany([
+      ...Array.from({ length: 105 }, (_, i) => ({
+        ...base,
+        _id: randomUUID(),
+        date: '2026-10-01',
+        description: 'Recent ' + i,
+        amount: 100,
+      })),
+      {
+        ...base,
+        _id: randomUUID(),
+        date: '2026-06-10',
+        description: 'Historical lunch',
+        amount: 12529,
+      },
+    ]);
+  await page.getByLabel('Overview month').fill('2026-06');
+  await expect(page.getByRole('cell', { name: 'Historical lunch', exact: true })).toBeVisible();
+});

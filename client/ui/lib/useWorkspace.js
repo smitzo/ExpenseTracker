@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useSession } from './Session.jsx';
 import { request } from './api.js';
+import { monthDays } from '../../../server/src/domain/dates.js';
 import { monthlySummary } from '../../../server/src/planning/summary.js';
 import { dailySeries } from '../../../server/src/planning/daily.js';
 import { categoryTotals } from '../../../server/src/planning/categoryTotals.js';
@@ -69,7 +70,14 @@ export function useWorkspace(month) {
       const [digest, cats, tx, recurring, budgets] = await Promise.all([
         request('/digest?month=' + month),
         request('/categories'),
-        request('/transactions?limit=100'),
+        request(
+          '/transactions?' +
+            new URLSearchParams({
+              limit: '100',
+              from: month + '-01',
+              to: month + '-' + String(monthDays(month)).padStart(2, '0'),
+            }),
+        ),
         request('/recurring'),
         request('/budgets?month=' + month),
       ]);
