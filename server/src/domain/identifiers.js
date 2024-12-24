@@ -7,6 +7,12 @@ export function record(ownerId, fields) {
 }
 export function publicRecord(doc) {
   if (!doc) return null;
-  const { _id, ownerId: _ownerId, ...rest } = doc;
+  const {
+    _id,
+    ownerId: _ownerId,
+    creationKey: _creationKey,
+    creationFingerprint: _creationFingerprint,
+    ...rest
+  } = doc;
   return { id: _id, ...rest };
 }

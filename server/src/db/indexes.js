@@ -7,6 +7,10 @@ export async function createIndexes(db) {
       [{ ownerId: 1 }, {}],
     ],
     ledger: [
+      [
+        { ownerId: 1, creationKey: 1 },
+        { unique: true, partialFilterExpression: { creationKey: { $type: 'string' } } },
+      ],
       [{ ownerId: 1, archived: 1, date: -1, _id: -1 }, {}],
       [
         { ownerId: 1, importKey: 1, importIndex: 1 },

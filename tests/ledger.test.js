@@ -114,3 +114,33 @@ test(
     assert.ok(csv.text.includes(c.name));
   },
 );
+
+test(
+  'concurrent creation retries insert one owned record and reject changed payloads',
+  { skip: !enabled },
+  async () => {
+    const { randomUUID } = await import('node:crypto');
+    const a = await account(ctx),
+      key = randomUUID();
+    const body = {
+      description: 'Retry-safe expense',
+      date: '2026-10-01',
+      amount: 12529,
+      kind: 'expense',
+    };
+    const results = await Promise.all(
+      Array.from({ length: 3 }, () =>
+        write(a, 'post', '/transactions', body).set('Idempotency-Key', key),
+      ),
+    );
+    assert.ok(results.every((r) => [200, 201].includes(r.status)));
+    assert.equal(new Set(results.map((r) => r.body.data.id)).size, 1);
+    assert.equal((await a.agent.get('/api/transactions')).body.meta.total, 1);
+    assert.ok(!('creationFingerprint' in results[0].body.data));
+    await write(a, 'post', '/transactions', { ...body, amount: 100 })
+      .set('Idempotency-Key', key)
+      .expect(409);
+    const b = await account(ctx);
+    await write(b, 'post', '/transactions', body).set('Idempotency-Key', key).expect(201);
+  },
+);

@@ -24,6 +24,32 @@ export const ledger = (db) => ({
       );
     return rows;
   },
+  byCreationKey: (ownerId, creationKey) =>
+    collection(db, 'ledger').findOne({ ownerId, creationKey }),
+  createOnce: async (ownerId, creationKey, creationFingerprint, fields) => {
+    const c = collection(db, 'ledger');
+    try {
+      const result = await c.findOneAndUpdate(
+        { ownerId, creationKey },
+        {
+          $setOnInsert: record(ownerId, {
+            ...fields,
+            creationKey,
+            creationFingerprint,
+            version: 1,
+            archived: false,
+          }),
+        },
+        { upsert: true, returnDocument: 'after', includeResultMetadata: true },
+      );
+      return { doc: result.value, replay: Boolean(result.lastErrorObject?.updatedExisting) };
+    } catch (error) {
+      if (error.code !== 11000) throw error;
+      const doc = await c.findOne({ ownerId, creationKey });
+      if (!doc) throw error;
+      return { doc, replay: true };
+    }
+  },
   find: (_id, ownerId) => collection(db, 'ledger').findOne({ _id, ownerId, archived: false }),
   create: async (ownerId, fields) => {
     const doc = record(ownerId, { ...fields, version: 1, archived: false });
