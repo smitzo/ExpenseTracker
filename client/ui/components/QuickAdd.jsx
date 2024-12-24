@@ -1,9 +1,11 @@
+import { useCreationKey } from '../lib/useCreationKey.js';
 import { useState } from 'react';
 import { Plus, X, ArrowRight } from 'lucide-react';
 import { useSession } from '../lib/Session.jsx';
 import { minorInput } from '../lib/format.js';
 import { useFeedback } from './Feedback.jsx';
 export function QuickAdd({ mutate, categories }) {
+  const creation = useCreationKey();
   const [open, setOpen] = useState(false),
     [busy, setBusy] = useState(false),
     [error, setError] = useState('');
@@ -15,14 +17,16 @@ export function QuickAdd({ mutate, categories }) {
     setError('');
     try {
       const f = new FormData(e.currentTarget);
-      await mutate('transactions', 'POST', {
+      const body = {
         description: String(f.get('description')),
         amount: minorInput(f.get('amount')),
         date: new Date().toISOString().slice(0, 10),
         kind: 'expense',
         categoryId: categories[0]?.id || null,
         note: '',
-      });
+      };
+      await mutate('transactions', 'POST', body, undefined, creation.keyFor(body));
+      creation.complete();
       e.target.reset();
       setOpen(false);
       notify('Expense added. A little more clarity.');

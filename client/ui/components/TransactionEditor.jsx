@@ -1,3 +1,4 @@
+import { useCreationKey } from '../lib/useCreationKey.js';
 import { useState } from 'react';
 import { Modal } from './Modal.jsx';
 import { minorInput } from '../lib/format.js';
@@ -5,6 +6,7 @@ import { request } from '../lib/api.js';
 import { useSession } from '../lib/Session.jsx';
 import { suggestCategory } from '../../../server/src/insights/suggestions.js';
 export function TransactionEditor({ transaction, categories, mutate, onClose }) {
+  const creation = useCreationKey();
   const { user, demo, sample } = useSession();
   const [kind, setKind] = useState(transaction?.kind || 'expense'),
     [categoryId, setCategory] = useState(transaction?.categoryId || ''),
@@ -36,7 +38,14 @@ export function TransactionEditor({ transaction, categories, mutate, onClose }) 
         note: String(f.get('note')).trim(),
       };
       if (transaction) body.version = transaction.version;
-      await mutate('transactions', transaction ? 'PATCH' : 'POST', body, transaction?.id);
+      await mutate(
+        'transactions',
+        transaction ? 'PATCH' : 'POST',
+        body,
+        transaction?.id,
+        transaction ? undefined : creation.keyFor(body),
+      );
+      creation.complete();
       onClose();
     } catch (e) {
       setError(e.message);

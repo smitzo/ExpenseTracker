@@ -176,3 +176,36 @@ test('an import retry after lost response and navigation keeps the original batc
   const rows = await (await page.request.get(origin + '/api/transactions?q=Lost')).json();
   expect(rows.meta.total).toBe(1);
 });
+
+test('transaction form retries a lost response without creating another expense', async ({
+  page,
+}) => {
+  await register(page);
+  const keys = [];
+  page.on('request', (r) => {
+    if (r.url().endsWith('/api/transactions') && r.method() === 'POST')
+      keys.push(r.headers()['idempotency-key']);
+  });
+  await page.getByRole('button', { name: 'Add transaction', exact: true }).click();
+  const dialog = page.getByRole('dialog');
+  await dialog.getByLabel('Description', { exact: true }).fill('Ambiguous creation');
+  await dialog.getByLabel('Amount (INR)').fill('25.29');
+  await page.route(
+    '**/api/transactions',
+    async (route) => {
+      if (route.request().method() === 'POST') {
+        await route.fetch();
+        await route.abort('failed');
+      } else await route.continue();
+    },
+    { times: 1 },
+  );
+  await dialog.getByRole('button', { name: 'Save transaction', exact: true }).click();
+  await expect(dialog.getByRole('alert')).toBeVisible();
+  await dialog.getByRole('button', { name: 'Save transaction', exact: true }).click();
+  await expect(dialog).not.toBeVisible();
+  expect(keys).toHaveLength(2);
+  expect(keys[0]).toBe(keys[1]);
+  const rows = await (await page.request.get(origin + '/api/transactions?q=Ambiguous')).json();
+  expect(rows.meta.total).toBe(1);
+});

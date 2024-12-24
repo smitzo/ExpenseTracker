@@ -101,7 +101,7 @@ export function useWorkspace(month) {
       generation.current++;
     };
   }, [reload]);
-  async function mutate(resource, method, body, id) {
+  async function mutate(resource, method, body, id, creationKey) {
     if (demo) {
       setSample((prev) => {
         let list = [...prev[resource]];
@@ -118,7 +118,11 @@ export function useWorkspace(month) {
       });
       return;
     }
-    await request('/' + resource + (id ? '/' + id : ''), { method, body });
+    await request('/' + resource + (id ? '/' + id : ''), {
+      method,
+      body,
+      ...(creationKey ? { headers: { 'Idempotency-Key': creationKey } } : {}),
+    });
     await reload();
   }
   return { data, loading, error, reload, mutate };
