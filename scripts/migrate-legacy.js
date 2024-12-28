@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { database, collection, disconnect } from '../server/src/db/connection.js';
 import { createIndexes } from '../server/src/db/indexes.js';
 import { toMinor } from '../server/src/domain/money.js';
+import { categorySchema } from '../server/src/domain/categories.js';
 import { transactionSchema } from '../server/src/domain/ledger.js';
 const uri = process.env.MONGODB_URI;
 if (!uri) throw new Error('MONGODB_URI is required');
@@ -42,14 +43,24 @@ try {
       preferences: { currency: 'INR', monthlyTarget: 0, weekStartsOn: 'monday' },
       createdAt: u.createdAt || new Date(),
     });
+    const categoryNames = new Set();
     for (const c of u.categories || []) {
+      const category = categorySchema.parse({
+        name: String(c.label || 'Other').slice(0, 40),
+        color: 'green',
+      });
+      const normalized = category.name.toLowerCase();
+      if (categoryNames.has(normalized))
+        throw new Error(
+          'Ambiguous legacy category names; resolve duplicates in a secure source copy',
+        );
+      categoryNames.add(normalized);
       const categoryId = id(c._id);
       categoryMap.set(String(u._id) + ':' + String(c._id), categoryId);
       docs.categories.push({
         _id: categoryId,
         ownerId,
-        name: String(c.label || 'Other').slice(0, 40),
-        color: 'green',
+        ...category,
         archived: false,
         createdAt: new Date(),
       });

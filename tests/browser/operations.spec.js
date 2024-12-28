@@ -109,3 +109,37 @@ test('private backup restores exact fixture data into an isolated namespace', as
     if (archive) await rm(archive, { force: true });
   }
 });
+
+test('migration rejects ambiguous source categories before writing target records', async () => {
+  const dbName = name('penny_test_ambiguous_');
+  const client = new mongoose.mongo.MongoClient(uriFor(dbName));
+  await client.connect();
+  const db = client.db(dbName);
+  try {
+    await db.collection('users').insertOne({
+      _id: new mongoose.Types.ObjectId(),
+      email: 'ambiguous@example.com',
+      password: await bcrypt.hash('legacy-password', 4),
+      categories: [
+        { _id: new mongoose.Types.ObjectId(), label: 'Travel' },
+        { _id: new mongoose.Types.ObjectId(), label: 'TRAVEL' },
+      ],
+    });
+    let failed = false;
+    try {
+      await run(process.execPath, ['scripts/migrate-legacy.js', '--apply'], {
+        env: { ...process.env, MONGODB_URI: uriFor(dbName), LEGACY_CURRENCY: 'INR' },
+        timeout: 15000,
+      });
+    } catch (e) {
+      failed = true;
+      expect(e.stderr).toContain('Ambiguous legacy category');
+    }
+    expect(failed).toBe(true);
+    expect(await db.collection('v2_users').countDocuments()).toBe(0);
+    expect(await db.collection('v2_categories').countDocuments()).toBe(0);
+  } finally {
+    await db.dropDatabase();
+    await client.close();
+  }
+});
