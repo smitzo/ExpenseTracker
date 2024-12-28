@@ -17,7 +17,17 @@ export async function createIndexes(db) {
         { unique: true, partialFilterExpression: { importKey: { $type: 'string' } } },
       ],
     ],
-    categories: [[{ ownerId: 1, name: 1 }, { unique: true }]],
+    categories: [
+      [{ ownerId: 1, name: 1 }, { unique: true }],
+      [
+        { ownerId: 1, name: 1 },
+        {
+          name: 'owner_category_name_casefold',
+          unique: true,
+          collation: { locale: 'en', strength: 2 },
+        },
+      ],
+    ],
     budgets: [[{ ownerId: 1, categoryId: 1, month: 1 }, { unique: true }]],
     recurring: [[{ ownerId: 1, nextDate: 1 }, {}]],
     batches: [[{ ownerId: 1 }, {}]],
