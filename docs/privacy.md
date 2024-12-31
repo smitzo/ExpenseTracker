@@ -1,5 +1,5 @@
 # Data controls
-GET /api/account/export returns the signed-in account’s profile and owned ledger (including archived rows), categories, budgets and recurring plans as a JSON download. It excludes password hashes, bearer sessions, rate-limit keys and infrastructure secrets. The current export cap is 100,001 rows per collection; do not promise completeness beyond that without a streaming export design.
+GET /api/account/export returns the signed-in account’s profile and owned ledger (including archived rows), categories, budgets and recurring plans as a JSON download. It excludes password hashes, bearer sessions, rate-limit keys and infrastructure secrets. The export fails clearly above 100,000 rows per collection; larger accounts need a streaming export design.
 
 DELETE /api/account requires password reauthentication, JSON Origin and CSRF headers. It revokes sessions and removes owned records before deleting the account. If infrastructure fails mid-delete, the account may remain and the user can sign in and retry; operators must reconcile partial deletions. This is not a cross-collection transaction. Backups remain subject to the published retention policy and access controls. Define and publish that policy before collecting real customer data.
 

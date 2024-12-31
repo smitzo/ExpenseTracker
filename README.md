@@ -47,3 +47,8 @@ The original CRA client and legacy server files remain reference material outsid
 
 ## Git and local planning
 The workspace uses a `.git` pointer to the existing ignored `.git-local` history; normal Git commands work without rewriting commits. Fresh clones use ordinary Git metadata. OpenSpec plans, task notes, review screenshots and hosting handoff reports remain ignored. Essential setup and hosting commands live here, while reusable engineering material remains in `docs/`.
+
+## Operational limits
+Analytics and CSV export currently cap active ledger history at 10,000 entries. Account JSON export fails above 100,000 records per collection. Recurring plans and active category views are bounded. Category index upgrades fail on ambiguous existing names; reconcile them in an isolated copy before release. There is no email verification/reset, MFA, bank sync or external AI dependency.
+
+A production release requires observed CI, a preview verified on its actual APP_ORIGIN, durable MongoDB with the required indexes, a tested restore and rollback, realistic capacity checks, monitoring/spend limits and published support/privacy operations. These are environment gates and cannot be established by local fixtures. See [security](docs/security.md), [migration](docs/migration.md) and [recovery](docs/recovery.md) for reusable engineering guidance.
