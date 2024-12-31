@@ -76,3 +76,19 @@ test('interrupted imports resume the accepted category snapshot', { skip: !enabl
   assert.equal(result.body.meta.total, 1);
   assert.equal(result.body.data[0].categoryId, c.id);
 });
+
+test(
+  'concurrent identical batch requests leave one set of ledger rows',
+  { skip: !enabled },
+  async () => {
+    const a = await account(ctx),
+      key = randomUUID();
+    const results = await Promise.all(
+      Array.from({ length: 3 }, () => write(a, 'post', '/imports/commit', { csv, key })),
+    );
+    assert.ok(results.some((r) => r.status === 200));
+    assert.ok(results.every((r) => [200, 409].includes(r.status)));
+    await write(a, 'post', '/imports/commit', { csv, key }).expect(200);
+    assert.equal((await a.agent.get('/api/transactions')).body.meta.total, 1);
+  },
+);

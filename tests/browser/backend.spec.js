@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { execFile } from 'node:child_process';
+import { readdir } from 'node:fs/promises';
 import { promisify } from 'node:util';
 const run = promisify(execFile);
 test('MongoDB-backed security ledger ownership and import acceptance', async () => {
@@ -9,16 +10,10 @@ test('MongoDB-backed security ledger ownership and import acceptance', async () 
     [
       '--test',
       '--test-concurrency=1',
-      'tests/auth.test.js',
-      'tests/ownership.test.js',
-      'tests/ledger.test.js',
-      'tests/budgets.test.js',
-      'tests/import.test.js',
-      'tests/privacy.test.js',
-      'tests/money.test.js',
-      'tests/dates.test.js',
-      'tests/insights.test.js',
-      'tests/validation.test.js',
+      ...(await readdir('tests'))
+        .filter((name) => name.endsWith('.test.js'))
+        .sort()
+        .map((name) => 'tests/' + name),
     ],
     {
       env: {
