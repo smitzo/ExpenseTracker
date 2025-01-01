@@ -10,11 +10,17 @@ const files = (
 )
   .split('\0')
   .filter(Boolean);
+const localArtifact =
+  /(^|\/)(VERCEL|DEMO_SHOWCASE|VALIDATION)\.md$|(^|\/)docs\/(verification|roadmap|release-checklist|deploy)\.md$|(^|\/)[^/]+-(validation-report|handoff)\.md$|(^|\/)docs\/images\/demo-showcase-/i;
+const localDirectory =
+  /(^|\/)(openspec|node_modules|\.vercel|\.aws|\.codex|\.agents|\.local|\.git-local)(\/|$)/;
+const instructions = /(^|\/)(AGENTS|CLAUDE|GEMINI)\.md$/;
 const forbidden = files.filter(
   (f) =>
-    /(^|\/)(openspec|node_modules|\.vercel|\.aws|\.codex|\.agents|\.local)(\/|$)|(^|\/)(AGENTS|CLAUDE|GEMINI)\.md$|(^|\/)\.env($|\.)/.test(
-      f,
-    ) && !f.endsWith('.env.example'),
+    localDirectory.test(f) ||
+    instructions.test(f) ||
+    (/(^|\/)\.env($|\.)/.test(f) && !f.endsWith('.env.example')) ||
+    localArtifact.test(f),
 );
 if (forbidden.length)
   throw new Error('Unexpected private/generated/instruction files in Git: ' + forbidden.join(', '));
