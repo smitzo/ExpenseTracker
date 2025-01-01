@@ -1,3 +1,6 @@
+import { readdir, readFile } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 import { spawn } from 'node:child_process';
 import { test, expect } from '@playwright/test';
 import { build, preview } from 'vite';
@@ -61,4 +64,16 @@ test('Node runtime serves built UI and health from the same origin', async () =>
     server.kill('SIGTERM');
     await new Promise((resolve) => server.once('exit', resolve));
   }
+});
+
+test('release build keeps production dependencies when called from a test environment', async () => {
+  await promisify(execFile)(process.execPath, ['client/build.js'], {
+    env: { ...process.env, NODE_ENV: 'test' },
+    timeout: 20000,
+  });
+  const files = await readdir('client/dist/assets');
+  const entry = files.find((name) => /^index-.*\.js$/.test(name));
+  expect(entry).toBeTruthy();
+  const contents = await readFile('client/dist/assets/' + entry);
+  expect(contents.length).toBeLessThan(500000);
 });

@@ -15,11 +15,12 @@
     "build": "npm run build -w client",
     "start": "npm start -w server",
     "test": "node --test --test-concurrency=1 tests/*.test.js",
-    "lint": "eslint server/src client/ui api tests scripts",
+    "lint": "eslint server/src client/ui api tests scripts client/build.js client/vite.config.js",
     "test:browser": "playwright test",
-    "check": "npm run format:check && npm run lint && npm test && npm run build",
-    "format": "prettier --write server/src client/ui api tests scripts *.js *.json client/vite.config.js",
-    "format:check": "prettier --check server/src client/ui api tests scripts *.js *.json client/vite.config.js"
+    "check": "npm run format:check && npm run lint && npm run audit:source && npm test && npm run build",
+    "format": "prettier --write server/src client/ui api tests scripts *.js *.json client/vite.config.js client/build.js",
+    "format:check": "prettier --check server/src client/ui api tests scripts *.js *.json client/vite.config.js client/build.js",
+    "audit:source": "node scripts/audit-source.js"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
